@@ -1,21 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Users</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - FilmReview</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js" defer></script>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">FilmReview</a>
+            <ul class="nav-links">
+                <li><a href="movies.html">Movies</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="users.html">Profile</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<h1>Users</h1>
+    <div class="container">
+        <div class="hero">
+            <h1>👤 User Profile</h1>
+            <p>View user profiles and account information</p>
+        </div>
 
-<label>User ID:</label>
-<input id="user-id-input" type="text">
-<button onclick="loadUser()">Get User</button>
+        <div class="form-container" style="max-width: 600px;">
+            <div class="form-group">
+                <label for="user-id-input">User ID</label>
+                <input id="user-id-input" type="text" placeholder="Enter user ID">
+            </div>
+            <button class="btn" onclick="loadUser()" style="width: 100%;">Get User Profile</button>
+        </div>
 
-<pre id="user-output"></pre>
-
-<a href="index.html">Back</a>
-
+        <div id="user-output" style="margin-top: 2rem;"></div>
+    </div>
 </body>
 </html>

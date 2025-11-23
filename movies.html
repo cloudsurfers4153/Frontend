@@ -1,19 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Movies</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - FilmReview</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js" defer></script>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">FilmReview</a>
+            <ul class="nav-links">
+                <li><a href="movies.html">Movies</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="users.html">Profile</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<h1>Movies</h1>
+    <div class="container">
+        <div class="hero">
+            <h1>🎬 Movie Collection</h1>
+            <p>Discover and explore our curated selection of films</p>
+        </div>
 
-<button onclick="loadMovies()">Load Movies</button>
+        <div class="action-bar">
+            <button class="btn" onclick="loadMovies()">Load Movies</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('movie-list').innerHTML = ''">Clear</button>
+        </div>
 
-<ul id="movie-list"></ul>
-
-<a href="index.html">Back</a>
-
+        <div id="movie-list" class="movies-grid"></div>
+    </div>
 </body>
 </html>

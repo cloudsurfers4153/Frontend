@@ -1,18 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Movie Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FilmReview - Discover & Review Movies</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">FilmReview</a>
+            <ul class="nav-links">
+                <li><a href="movies.html">Movies</a></li>
+                <li><a href="reviews.html">Reviews</a></li>
+                <li><a href="users.html">Profile</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<h1>Movie Platform UI</h1>
+    <div class="container">
+        <div class="hero">
+            <h1>Welcome to FilmReview</h1>
+            <p>Discover amazing movies, read reviews, and share your thoughts with the community</p>
+        </div>
 
-<ul>
-    <li><a href="movies.html">Movies</a></li>
-    <li><a href="reviews.html">Reviews</a></li>
-    <li><a href="users.html">Users</a></li>
-</ul>
+        <div class="action-bar">
+            <a href="movies.html" class="btn">Browse Movies</a>
+            <a href="reviews.html" class="btn btn-secondary">Read Reviews</a>
+            <a href="login.html" class="btn btn-secondary">Get Started</a>
+        </div>
 
+        <div class="card">
+            <h2 style="margin-bottom: 1rem; color: var(--accent-color);">🎬 Explore Our Features</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">📽️ Movies</h3>
+                    <p style="color: #ccc;">Browse our extensive collection of films with detailed information</p>
+                </div>
+                <div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">⭐ Reviews</h3>
+                    <p style="color: #ccc;">Read and write reviews from our community of film enthusiasts</p>
+                </div>
+                <div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">👤 Community</h3>
+                    <p style="color: #ccc;">Join our community and share your movie experiences</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card message-info" style="margin-top: 2rem;">
+            <strong>ℹ️ Note:</strong> Make sure the composite service is running on <code>http://localhost:8000</code>
+            <br>If running on a different URL, update the BASE constant in <code>app.js</code>
+        </div>
+    </div>
 </body>
 </html>
