@@ -1,5 +1,5 @@
 // Base URL for composite service - update if running on different host/port
-const BASE = "http://localhost:8000/composite";
+const BASE = "https://compositemicroservice-608197196549.us-central1.run.app/composite";
 
 // Helper function to handle errors
 async function handleResponse(res) {
