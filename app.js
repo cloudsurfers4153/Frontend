@@ -11,18 +11,24 @@ async function handleResponse(res) {
 }
 
 // ----- MOVIES -----
-async function loadMovies() {
+async function loadMovies(page = 1) {
     const list = document.getElementById("movie-list");
+    const paginationContainer = document.getElementById("pagination-controls");
     if (!list) return;
     
     list.innerHTML = '<div class="loading">Loading movies</div>';
+    if (paginationContainer) paginationContainer.innerHTML = '';
     
     try {
-        const res = await fetch(`${BASE}/movies?page=1&page_size=12`);
+        const res = await fetch(`${BASE}/movies?page=${page}&page_size=12`);
         const data = await handleResponse(res);
         
         // Handle paginated response
         const movies = data.items || data;
+        const total = data.total_items || data.total || movies.length;
+        const currentPage = data.page || page;
+        const pageSize = data.page_size || 12;
+        const totalPages = data.total_pages || data.pages || Math.ceil(total / pageSize);
         
         if (movies.length === 0) {
             list.innerHTML = '<div class="empty-state">No movies found</div>';
@@ -51,10 +57,46 @@ async function loadMovies() {
             `;
             list.appendChild(card);
         });
+        
+        // Render pagination controls
+        if (paginationContainer && movies.length > 0) {
+            renderPaginationControls(currentPage, totalPages, total);
+        }
     } catch (error) {
         list.innerHTML = `<div class="message message-error">Error: ${error.message}</div>`;
         console.error("Error loading movies:", error);
     }
+}
+
+function renderPaginationControls(currentPage, totalPages, totalMovies) {
+    const paginationContainer = document.getElementById("pagination-controls");
+    if (!paginationContainer) return;
+    
+    const prevDisabled = currentPage <= 1;
+    const nextDisabled = currentPage >= totalPages;
+    
+    paginationContainer.innerHTML = `
+        <div class="pagination-info">
+            <span>Page ${currentPage} of ${totalPages}</span>
+            <span>Total: ${totalMovies} movies</span>
+        </div>
+        <div class="pagination-buttons">
+            <button 
+                class="btn btn-secondary" 
+                onclick="loadMovies(${currentPage - 1})" 
+                ${prevDisabled ? 'disabled' : ''}
+            >
+                ← Previous
+            </button>
+            <button 
+                class="btn btn-secondary" 
+                onclick="loadMovies(${currentPage + 1})" 
+                ${nextDisabled ? 'disabled' : ''}
+            >
+                Next →
+            </button>
+        </div>
+    `;
 }
 
 async function getMovie(movieId) {
@@ -204,7 +246,7 @@ async function loadReviews() {
     list.innerHTML = '<div class="loading">Loading reviews</div>';
     
     try {
-        const res = await fetch(`${BASE}/reviews?page=1&page_size=10`);
+        const res = await fetch(`${BASE}/reviews?page=1&page_size=40`);
         const data = await handleResponse(res);
         
         // Handle paginated response structure
@@ -543,7 +585,10 @@ async function login() {
         // Store token for future requests
         if (data.access_token) {
             localStorage.setItem('auth_token', data.access_token);
-            resultDiv.innerHTML = '<div class="message message-success">✅ Login successful! Token saved. You can now access protected features.</div>';
+            resultDiv.innerHTML = '<div class="message message-success">✅ Login successful! Redirecting to profile...</div>';
+            setTimeout(() => {
+                window.location.href = 'users.html';
+            }, 1000);
         } else {
             resultDiv.innerHTML = '<div class="message message-info">⚠️ Login response received but no token found</div>';
         }
