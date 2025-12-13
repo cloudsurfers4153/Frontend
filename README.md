@@ -62,7 +62,7 @@ const BASE = "https://your-composite-service.run.app/composite";
 
 ## Deployment to Google Cloud Storage
 
-The frontend is deployed as a static website on Google Cloud Storage.
+The frontend is deployed as a website on Google Cloud Storage.
 
 ### Prerequisites
 
@@ -77,21 +77,14 @@ The frontend is deployed as a static website on Google Cloud Storage.
 2. **Authenticate**
    ```bash
    gcloud auth login
-   gcloud config set project stunning-symbol-479107-j0
+   gcloud config set project coms4153-cloud-surfers
    ```
 
 ### Deploy
-
-**Option 1: Use the deployment script**
+**Manual deployment**
 ```bash
-cd Frontend
-./deploy-frontend-only.sh
-```
-
-**Option 2: Manual deployment**
-```bash
-export PROJECT_ID="stunning-symbol-479107-j0"
-export BUCKET_NAME="movie-platform-frontend-479107"
+export PROJECT_ID="coms4153-cloud-surfers"
+export BUCKET_NAME="movie-platform-frontend"
 
 # Create bucket
 gsutil mb -p $PROJECT_ID -c STANDARD -l us-central1 gs://$BUCKET_NAME
@@ -113,7 +106,7 @@ gsutil -m setmeta -h "Content-Type:application/javascript" gs://$BUCKET_NAME/*.j
 
 After deployment, your frontend is available at:
 ```
-https://storage.googleapis.com/movie-platform-frontend-479107/index.html
+https://storage.googleapis.com/movie-platform-frontend/index.html
 ```
 
 ### Update After Composite Service Deployment
@@ -127,8 +120,8 @@ Once your composite service is deployed to Cloud Run:
 
 2. **Re-upload `app.js`**:
    ```bash
-   gsutil cp app.js gs://movie-platform-frontend-479107/app.js
-   gsutil setmeta -h "Content-Type:application/javascript" gs://movie-platform-frontend-479107/app.js
+   gsutil cp app.js gs://movie-platform-frontend/app.js
+   gsutil setmeta -h "Content-Type:application/javascript" gs://movie-platform-frontend/app.js
    ```
 
 ## Project Structure
@@ -204,8 +197,8 @@ The frontend communicates with the composite service at these endpoints:
 
 ## Configuration Details
 
-- **Project ID**: `stunning-symbol-479107-j0`
-- **Bucket Name**: `movie-platform-frontend-479107`
+- **Project ID**: `coms4153-cloud-surfers`
+- **Bucket Name**: `movie-platform-frontend`
 - **Default API Endpoint**: `http://localhost:8000/composite`
 
 ## Next Steps
