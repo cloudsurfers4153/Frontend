@@ -335,142 +335,7 @@ async function deleteReview(reviewId) {
     }
 }
 
-async function submitReview() {
-    const user_id = document.getElementById("user-id").value;
-    const movie_id = document.getElementById("movie-id").value;
-    const rating = parseInt(document.getElementById("rating").value);
-    const comment = document.getElementById("comment").value;
-    const resultDiv = document.getElementById("submit-result");
-    
-    if (!user_id || !movie_id || !rating || !comment) {
-        resultDiv.innerHTML = '<div class="message message-error">Please fill in all fields (User ID, Movie ID, Rating, and Comment)</div>';
-        return;
-    }
-    
-    if (rating < 1 || rating > 5) {
-        resultDiv.innerHTML = '<div class="message message-error">Rating must be between 1 and 5</div>';
-        return;
-    }
-    
-    resultDiv.innerHTML = '<div class="loading">Submitting review</div>';
-    
-    const payload = {
-        user_id: parseInt(user_id),
-        movie_id: parseInt(movie_id),
-        rating: rating,
-        comment: comment
-    };
-    
-    try {
-        const res = await fetch(`${BASE}/reviews`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-        });
-        
-        const data = await handleResponse(res);
-        resultDiv.innerHTML = `<div class="message message-success">✅ Review submitted successfully! Review ID: ${data.id}</div>`;
-        
-        // Clear form
-        document.getElementById("user-id").value = "";
-        document.getElementById("movie-id").value = "";
-        document.getElementById("rating").value = "";
-        document.getElementById("comment").value = "";
-        
-        // Reload reviews after a short delay
-        setTimeout(() => {
-            loadReviews();
-        }, 1000);
-    } catch (error) {
-        resultDiv.innerHTML = `<div class="message message-error">❌ Error: ${error.message}</div>`;
-        console.error("Error submitting review:", error);
-    }
-}
-
 // ----- USERS -----
-async function loadUser() {
-    const id = document.getElementById("user-id-input").value;
-    const output = document.getElementById("user-output");
-    
-    if (!id) {
-        output.innerHTML = '<div class="message message-error">Please enter a User ID</div>';
-        return;
-    }
-    
-    output.innerHTML = '<div class="loading">Loading user profile</div>';
-    
-    try {
-        // Get token from localStorage if available
-        const token = localStorage.getItem('auth_token');
-        const headers = {"Content-Type": "application/json"};
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
-        
-        const res = await fetch(`${BASE}/users/${id}`, { headers });
-        const data = await handleResponse(res);
-        
-        // Store current user ID for update/delete operations
-        window.currentUserId = id;
-        
-        // Display user in a nice card format
-        output.innerHTML = `
-            <div class="card">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                        👤
-                    </div>
-                    <div>
-                        <h2 style="color: var(--accent-color); margin-bottom: 0.5rem;">${data.full_name || data.username || 'User'}</h2>
-                        <div style="color: #999; font-size: 0.9rem;">@${data.username}</div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
-                    <div>
-                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Email</div>
-                        <div style="color: var(--text-light);">${data.email}</div>
-                    </div>
-                    <div>
-                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">User ID</div>
-                        <div style="color: var(--text-light); font-family: monospace; font-size: 0.9rem;">${data.id}</div>
-                    </div>
-                    <div>
-                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Status</div>
-                        <div style="color: ${data.is_active ? 'var(--success-color)' : '#999'};">
-                            ${data.is_active ? '✅ Active' : '❌ Inactive'}
-                        </div>
-                    </div>
-                    <div>
-                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Member Since</div>
-                        <div style="color: var(--text-light); font-size: 0.9rem;">
-                            ${new Date(data.created_at).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                            })}
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                    <button class="btn" onclick="showUpdateUserForm('${id}')">Update Profile</button>
-                    <button class="btn btn-secondary" onclick="deleteUser('${id}')">Delete Account</button>
-                </div>
-                
-                <div id="update-user-form" style="margin-top: 2rem; display: none;"></div>
-            </div>
-        `;
-    } catch (error) {
-        output.innerHTML = `
-            <div class="message message-error">
-                ❌ Error: ${error.message}<br><br>
-                <small>Note: User endpoints require authentication. Please <a href="login.html" style="color: var(--accent-color);">login first</a>.</small>
-            </div>
-        `;
-        console.error("Error loading user:", error);
-    }
-}
 
 function showUpdateUserForm(userId) {
     const formDiv = document.getElementById("update-user-form");
@@ -598,6 +463,69 @@ async function login() {
     }
 }
 
+// ----- GOOGLE OAUTH -----
+async function loginWithGoogle() {
+    const resultDiv = document.getElementById("login-result");
+    if (resultDiv) {
+        resultDiv.innerHTML = '<div class="loading">Connecting to Google</div>';
+    }
+    
+    try {
+        const res = await fetch(`${BASE}/auth/google/url`);
+        const data = await handleResponse(res);
+
+        sessionStorage.setItem('google_oauth_state', data.state);
+        
+        // Redirect to Google OAuth
+        window.location.href = data.auth_url;
+    } catch (error) {
+        if (resultDiv) {
+            resultDiv.innerHTML = `<div class="message message-error">Failed to connect to Google: ${error.message}</div>`;
+        }
+        console.error("Error initiating Google OAuth:", error);
+    }
+}
+
+// Handle Google OAuth callback
+function handleGoogleCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const googleAuth = params.get('google_auth');
+    
+    if (googleAuth === 'success') {
+        const accessToken = params.get('access_token');
+        const resultDiv = document.getElementById("login-result");
+        
+        if (accessToken) {
+            localStorage.setItem('auth_token', accessToken);
+            
+            const googleToken = params.get('google_token');
+            if (googleToken) {
+                localStorage.setItem('google_token', googleToken);
+            }
+            
+            if (resultDiv) {
+                resultDiv.innerHTML = '<div class="message message-success">✅ Google login successful! Redirecting to profile...</div>';
+            }
+            
+            window.history.replaceState({}, '', 'login.html');
+            setTimeout(() => {
+                window.location.href = 'users.html';
+            }, 1000);
+        } else {
+            if (resultDiv) {
+                resultDiv.innerHTML = '<div class="message message-error">❌ Google login failed: No access token received</div>';
+            }
+        }
+    } else if (googleAuth === 'error') {
+        const errorMsg = params.get('error') || 'Unknown error';
+        const resultDiv = document.getElementById("login-result");
+        if (resultDiv) {
+            resultDiv.innerHTML = `<div class="message message-error">❌ Google login failed: ${errorMsg}</div>`;
+        }
+        window.history.replaceState({}, '', 'login.html');
+    }
+}
+
 async function register() {
     const email = document.getElementById("reg-email").value;
     const username = document.getElementById("reg-username").value;
@@ -654,5 +582,207 @@ async function checkHealth() {
         alert(`❌ Health check failed: ${error.message}`);
         console.error("Error checking health:", error);
         return null;
+    }
+}
+
+// ----- PROFILE PAGE -----
+// Helper function to decode JWT token and extract user info
+function decodeToken(token) {
+    try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        return decoded;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+    }
+}
+
+async function loadProfile() {
+    const token = localStorage.getItem('auth_token');
+    const output = document.getElementById("user-output");
+    const reviewSection = document.getElementById("write-review-section");
+    
+    if (!token) {
+        output.innerHTML = `
+            <div class="message message-info">
+                🔒 Please login to view user's information. <a href="login.html" style="color: var(--accent-color);">Login here</a>
+            </div>
+        `;
+        if (reviewSection) {
+            reviewSection.style.display = 'none';
+        }
+        return;
+    }
+    
+    if (reviewSection) {
+        reviewSection.style.display = 'block';
+    }
+    
+    const tokenData = decodeToken(token);
+    const userId = tokenData?.user_id || tokenData?.sub || tokenData?.id;
+    
+    if (!userId) {
+        output.innerHTML = `
+            <div class="message message-error">
+                ❌ Unable to retrieve user information from token. Please <a href="login.html" style="color: var(--accent-color);">login again</a>.
+            </div>
+        `;
+        return;
+    }
+    
+    window.currentUserId = userId;
+    
+    output.innerHTML = '<div class="loading">Loading user profile</div>';
+    
+    try {
+        const headers = {"Content-Type": "application/json"};
+        headers["Authorization"] = `Bearer ${token}`;
+        
+        const res = await fetch(`${BASE}/users/${userId}`, { headers });
+        const data = await handleResponse(res);
+        
+        output.innerHTML = `
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                        👤
+                    </div>
+                    <div>
+                        <h2 style="color: var(--accent-color); margin-bottom: 0.5rem;">${data.full_name || data.username || 'User'}</h2>
+                        <div style="color: #999; font-size: 0.9rem;">@${data.username}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div>
+                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Email</div>
+                        <div style="color: var(--text-light);">${data.email}</div>
+                    </div>
+                    <div>
+                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">User ID</div>
+                        <div style="color: var(--text-light); font-family: monospace; font-size: 0.9rem;">${data.id}</div>
+                    </div>
+                    <div>
+                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Status</div>
+                        <div style="color: ${data.is_active ? 'var(--success-color)' : '#999'};">
+                            ${data.is_active ? '✅ Active' : '❌ Inactive'}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.3rem;">Member Since</div>
+                        <div style="color: var(--text-light); font-size: 0.9rem;">
+                            ${new Date(data.created_at).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            })}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button class="btn" onclick="showUpdateUserForm('${data.id}')">Update Profile</button>
+                    <button class="btn btn-secondary" onclick="deleteUser('${data.id}')">Delete Account</button>
+                    <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                </div>
+                
+                <div id="update-user-form" style="margin-top: 2rem; display: none;"></div>
+            </div>
+        `;
+    } catch (error) {
+        output.innerHTML = `
+            <div class="message message-error">
+                ❌ Error: ${error.message}<br><br>
+                <small>Please try <a href="login.html" style="color: var(--accent-color);">logging in again</a>.</small>
+            </div>
+        `;
+        console.error("Error loading profile:", error);
+    }
+}
+
+async function logout() {
+    const token = localStorage.getItem('auth_token');
+    const googleToken = localStorage.getItem('google_token');
+    
+    if (googleToken && token) {
+        try {
+            await fetch(`${BASE}/auth/google/logout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ google_token: googleToken })
+            });
+        } catch (e) {
+            console.warn('Failed to revoke Google token:', e);
+        }
+    }
+    
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('google_token');
+    window.location.href = 'login.html';
+}
+
+async function submitProfileReview() {
+    const token = localStorage.getItem('auth_token');
+    const resultDiv = document.getElementById("profile-submit-result");
+    
+    if (!token) {
+        resultDiv.innerHTML = '<div class="message message-error">🔒 Please login to write a review. <a href="login.html" style="color: var(--accent-color);">Login here</a></div>';
+        return;
+    }
+    
+    const tokenData = decodeToken(token);
+    const userId = tokenData?.user_id || tokenData?.sub || tokenData?.id || window.currentUserId;
+    
+    if (!userId) {
+        resultDiv.innerHTML = '<div class="message message-error">❌ Unable to identify user. Please <a href="login.html" style="color: var(--accent-color);">login again</a>.</div>';
+        return;
+    }
+    
+    const movie_id = document.getElementById("profile-movie-id").value;
+    const rating = parseInt(document.getElementById("profile-rating").value);
+    const comment = document.getElementById("profile-comment").value;
+    
+    if (!movie_id || !rating || !comment) {
+        resultDiv.innerHTML = '<div class="message message-error">Please fill in all fields (Movie ID, Rating, and Comment)</div>';
+        return;
+    }
+    
+    if (rating < 1 || rating > 5) {
+        resultDiv.innerHTML = '<div class="message message-error">Rating must be between 1 and 5</div>';
+        return;
+    }
+    
+    resultDiv.innerHTML = '<div class="loading">Submitting review</div>';
+    
+    const payload = {
+        user_id: parseInt(userId),
+        movie_id: parseInt(movie_id),
+        rating: rating,
+        comment: comment
+    };
+    
+    try {
+        const res = await fetch(`${BASE}/reviews`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await handleResponse(res);
+        resultDiv.innerHTML = `<div class="message message-success">✅ Review submitted successfully! Review ID: ${data.id}</div>`;
+        
+        document.getElementById("profile-movie-id").value = "";
+        document.getElementById("profile-rating").value = "";
+        document.getElementById("profile-comment").value = "";
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="message message-error">❌ Error: ${error.message}</div>`;
+        console.error("Error submitting review:", error);
     }
 }
